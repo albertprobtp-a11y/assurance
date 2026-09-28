@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(cuid())
+  address   String    @unique
+  email     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  policies  Policy[]
+  claims    Claim[]
+}
+
+model Policy {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  protocol        String
+  collateralAsset String   @default("USDC")
+  collateralAmount Float
+  coverageAmount  Float
+  premium         Float
+  durationDays    Int
+  riskLevel       String   @default("medium")
+  status          String   @default("pending")
+  txHash          String?
+  createdAt       DateTime @default(now())
+  expiresAt       DateTime
+  claims          Claim[]
+}
+
+model Claim {
+  id          String   @id @default(cuid())
+  policyId    String
+  policy      Policy   @relation(fields: [policyId], references: [id])
+  amount      Float
+  reason      String
+  description String?
+  evidence    String[]
+  status      String   @default("submitted")
+  createdAt   DateTime @default(now())
+  resolvedAt  DateTime?
+}
